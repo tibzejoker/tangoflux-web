@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beautiful Sound Generator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #7f00ff, #e100ff);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            color: #2d3748;
+            padding-bottom: 120px; /* Space for fixed player */
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 
+                0 10px 25px rgba(0, 0, 0, 0.1),
+                0 20px 48px rgba(0, 0, 0, 0.1),
+                0 1px 4px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 720px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #7f00ff, #e100ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 800;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin: 2rem 0 1rem;
+            color: #4a5568;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 0.75rem;
+            max-width: 200px;
+            margin: 0 auto;
+        }
+
+        .quantity-btn {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #4a5568;
+            font-size: 1.2rem;
+        }
+
+        .quantity-btn:hover:not(:disabled) {
+            background: #edf2f7;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .quantity-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #quantity-input {
+            width: 60px;
+            text-align: center;
+            border: none;
+            font-size: 1rem;
+            color: #2d3748;
+            padding: 0.5rem;
+            -moz-appearance: textfield;
+        }
+
+        #quantity-input::-webkit-outer-spin-button,
+        #quantity-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input {
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            width: 100%;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #7f00ff;
+            box-shadow: 0 0 0 3px rgba(127, 0, 255, 0.1);
+        }
+
+        button {
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #7f00ff, #e100ff);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(127, 0, 255, 0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #sounds-list {
+            text-align: left;
+        }
+
+        #sounds-list ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .sound-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sound-info {
+            flex-grow: 1;
+            margin-right: 1rem;
+        }
+
+        .sound-controls {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            padding: 0.5rem;
+            cursor: pointer;
+            color: #4a5568;
+            transition: color 0.2s ease;
+        }
+
+        .control-btn:hover {
+            color: #7f00ff;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Global Player Styles */
+        #global-player {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 1000;
+        }
+
+        .player-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-grow: 1;
+        }
+
+        .progress-bar {
+            flex-grow: 1;
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(135deg, #7f00ff, #e100ff);
+            border-radius: 2px;
+            width: 0;
+        }
+
+        .time-display {
+            font-size: 0.875rem;
+            color: #4a5568;
+            min-width: 45px;
+        }
+
+        /* Volume Control Styles */
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-left: 1rem;
+            min-width: 140px;
+        }
+
+        .volume-slider {
+            -webkit-appearance: none;
+            width: 100px;
+            height: 4px;
+            border-radius: 2px;
+            background: #e2e8f0;
+            outline: none;
+            transition: background 0.2s;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #7f00ff;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #7f00ff;
+            cursor: pointer;
+            transition: transform 0.1s;
+            border: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb:hover,
+        .volume-slider::-moz-range-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .volume-slider::-webkit-slider-runnable-track {
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        .volume-slider::-moz-range-track {
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        .now-playing {
+            font-weight: 500;
+            color: #4a5568;
+            margin-right: 1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 1rem;
+            }
+
+            .container {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .now-playing {
+                max-width: 150px;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .sound-item {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Text-to-Audio Generator 🎵</h1>
+        <form id="generate-form">
+            <input 
+                type="text" 
+                name="prompt" 
+                placeholder="Enter your text here..." 
+                required
+                autocomplete="off"
+            >
+            <input 
+                type="number" 
+                name="duration" 
+                placeholder="Duration (1-30 sec)" 
+                min="1" 
+                max="30" 
+                required
+                value="5"
+            >
+            <div class="quantity-control">
+                <button type="button" class="quantity-btn" id="decrease-quantity">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <input 
+                    type="number" 
+                    name="quantity" 
+                    id="quantity-input"
+                    value="1" 
+                    min="1" 
+                    max="10" 
+                    required
+                    readonly
+                >
+                <button type="button" class="quantity-btn" id="increase-quantity">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+            <button type="submit" id="generate-btn">Generate Sound ✨</button>
+        </form>
+        <div id="sounds-list">
+            <h2>Your Generated Sounds</h2>
+            <ul>
+                {% for sound in sounds or [] %}
+                <li class="sound-item">
+                    <div class="sound-info">
+                        <p>{{ sound.prompt }}</p>
+                    </div>
+                    <div class="sound-controls">
+                        <button class="control-btn play-btn" data-url="/static/sounds/{{ sound.filename }}" data-prompt="{{ sound.prompt }}">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <a href="/static/sounds/{{ sound.filename }}" download class="control-btn">
+                            <i class="fas fa-download"></i>
+                        </a>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Global Audio Player -->
+    <div id="global-player">
+        <p class="now-playing">Select a sound to play</p>
+        <div class="player-controls">
+            <button class="control-btn" id="play-pause-btn">
+                <i class="fas fa-play"></i>
+            </button>
+            <span class="time-display" id="current-time">0:00</span>
+            <div class="progress-bar" id="progress-bar">
+                <div class="progress" id="progress"></div>
+            </div>
+            <span class="time-display" id="duration">0:00</span>
+            <div class="volume-control">
+                <button class="control-btn" id="mute-btn">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+                <input type="range" class="volume-slider" id="volume-slider" 
+                       min="0" max="1" step="0.01" value="1">
+            </div>
+        </div>
+        <audio id="global-audio"></audio>
+    </div>
+
+    <script>
+        const form = document.getElementById("generate-form");
+        const globalAudio = document.getElementById("global-audio");
+        const playPauseBtn = document.getElementById("play-pause-btn");
+        const progressBar = document.getElementById("progress-bar");
+        const progress = document.getElementById("progress");
+        const currentTimeDisplay = document.getElementById("current-time");
+        const durationDisplay = document.getElementById("duration");
+        const nowPlaying = document.querySelector(".now-playing");
+        let currentPlayBtn = null;
+
+        // Format time in MM:SS
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        // Update progress bar
+        globalAudio.addEventListener("timeupdate", () => {
+            const percent = (globalAudio.currentTime / globalAudio.duration) * 100;
+            progress.style.width = percent + "%";
+            currentTimeDisplay.textContent = formatTime(globalAudio.currentTime);
+        });
+
+        // Update duration when metadata is loaded
+        globalAudio.addEventListener("loadedmetadata", () => {
+            durationDisplay.textContent = formatTime(globalAudio.duration);
+        });
+
+        // Click on progress bar to seek
+        progressBar.addEventListener("click", (e) => {
+            const rect = progressBar.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            globalAudio.currentTime = percent * globalAudio.duration;
+        });
+
+        // Play/Pause global audio
+        playPauseBtn.addEventListener("click", () => {
+            if (globalAudio.paused) {
+                globalAudio.play();
+                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                if (currentPlayBtn) {
+                    currentPlayBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                }
+            } else {
+                globalAudio.pause();
+                playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                if (currentPlayBtn) {
+                    currentPlayBtn.innerHTML = '<i class="fas fa-play"></i>';
+                }
+            }
+        });
+
+        // Reset player when audio ends
+        globalAudio.addEventListener("ended", () => {
+            playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+            if (currentPlayBtn) {
+                currentPlayBtn.innerHTML = '<i class="fas fa-play"></i>';
+            }
+            progress.style.width = "0%";
+        });
+
+        // Handle form submission
+        // Quantity Control
+        const quantityInput = document.getElementById("quantity-input");
+        const decreaseBtn = document.getElementById("decrease-quantity");
+        const increaseBtn = document.getElementById("increase-quantity");
+        const generateBtn = document.getElementById("generate-btn");
+
+        function updateQuantityButtons() {
+            const value = parseInt(quantityInput.value);
+            decreaseBtn.disabled = value <= 1;
+            increaseBtn.disabled = value >= 10;
+        }
+
+        decreaseBtn.addEventListener("click", () => {
+            const value = parseInt(quantityInput.value);
+            if (value > 1) {
+                quantityInput.value = value - 1;
+                updateQuantityButtons();
+            }
+        });
+
+        increaseBtn.addEventListener("click", () => {
+            const value = parseInt(quantityInput.value);
+            if (value < 10) {
+                quantityInput.value = value + 1;
+                updateQuantityButtons();
+            }
+        });
+
+        // Initialize quantity buttons state
+        updateQuantityButtons();
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            
+            // Disable all form controls
+            const formControls = form.querySelectorAll('input, button');
+            formControls.forEach(control => control.disabled = true);
+            
+            const quantity = parseInt(quantityInput.value);
+            generateBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Generating ${quantity} sound${quantity > 1 ? 's' : ''}...`;
+
+            try {
+                const list = document.querySelector("#sounds-list ul");
+                const promptInput = form.querySelector('input[name="prompt"]');
+                const durationInput = form.querySelector('input[name="duration"]');
+                
+                // Generate multiple sounds
+                for (let i = 0; i < quantity; i++) {
+                    generateBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Generating sound ${i + 1}/${quantity}...`;
+                    
+                    // Create fresh FormData with explicit values
+                    const formData = new FormData();
+                    formData.append('prompt', promptInput.value);
+                    formData.append('duration', durationInput.value);
+                    formData.append('quantity', '1');
+                    
+                    console.log('Sending data:', {
+                        prompt: promptInput.value,
+                        duration: durationInput.value,
+                        quantity: 1
+                    });
+                    
+                    const response = await fetch("/generate", { 
+                        method: "POST",
+                        body: formData
+                    });
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        const newSound = `
+                            <li class="sound-item">
+                                <div class="sound-info">
+                                    <p>${data.prompt}</p>
+                                </div>
+                                <div class="sound-controls">
+                                    <button class="control-btn play-btn" data-url="${data.url}" data-prompt="${data.prompt}">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                    <a href="${data.url}" download class="control-btn">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </div>
+                            </li>
+                        `;
+                        list.insertAdjacentHTML('afterbegin', newSound);
+                        attachPlayButtonListeners();
+                    } else {
+                        throw new Error(data.error || "Failed to generate sound.");
+                    }
+                }
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                // Re-enable all form controls
+                formControls.forEach(control => control.disabled = false);
+                generateBtn.innerHTML = "Generate Sound ✨";
+                updateQuantityButtons();
+            }
+        });
+
+        // Attach event listeners to play buttons
+        function attachPlayButtonListeners() {
+            document.querySelectorAll('.play-btn').forEach(btn => {
+                if (!btn.hasListener) {
+                    btn.addEventListener('click', function() {
+                        const url = this.dataset.url;
+                        const prompt = this.dataset.prompt;
+
+                        if (currentPlayBtn === this) {
+                            if (globalAudio.paused) {
+                                globalAudio.play();
+                                this.innerHTML = '<i class="fas fa-pause"></i>';
+                                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                            } else {
+                                globalAudio.pause();
+                                this.innerHTML = '<i class="fas fa-play"></i>';
+                                playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                            }
+                        } else {
+                            if (currentPlayBtn) {
+                                currentPlayBtn.innerHTML = '<i class="fas fa-play"></i>';
+                            }
+                            currentPlayBtn = this;
+                            globalAudio.src = url;
+                            globalAudio.play();
+                            this.innerHTML = '<i class="fas fa-pause"></i>';
+                            playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                            nowPlaying.textContent = prompt;
+                        }
+                    });
+                    btn.hasListener = true;
+                }
+            });
+        }
+
+        // Volume Control
+        const volumeSlider = document.getElementById("volume-slider");
+        const muteBtn = document.getElementById("mute-btn");
+        let lastVolume = 1;
+
+        volumeSlider.addEventListener("input", (e) => {
+            const volume = parseFloat(e.target.value);
+            globalAudio.volume = volume;
+            lastVolume = volume;
+            
+            // Update mute button icon based on volume level
+            if (volume === 0) {
+                muteBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+            } else if (volume < 0.5) {
+                muteBtn.innerHTML = '<i class="fas fa-volume-down"></i>';
+            } else {
+                muteBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+            }
+        });
+
+        muteBtn.addEventListener("click", () => {
+            if (globalAudio.volume > 0) {
+                lastVolume = globalAudio.volume;
+                globalAudio.volume = 0;
+                volumeSlider.value = 0;
+                muteBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+            } else {
+                globalAudio.volume = lastVolume;
+                volumeSlider.value = lastVolume;
+                if (lastVolume < 0.5) {
+                    muteBtn.innerHTML = '<i class="fas fa-volume-down"></i>';
+                } else {
+                    muteBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                }
+            }
+        });
+
+        // Initial attachment of listeners
+        attachPlayButtonListeners();
+    </script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+flask==3.0.0
+torch>=2.0.0
+torchaudio==2.1.1
+accelerate  # For TangoFlux
+git+https://github.com/declare-lab/TangoFlux
