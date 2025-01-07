@@ -65,8 +65,6 @@ This project is licensed under the same terms as TangoFlux:
 
 This project uses:
 - [TangoFlux](https://github.com/declare-lab/TangoFlux) - The core text-to-audio generation model
-- Font Awesome icons
-- Tailwind-like styling
 
 ## Contributing
 
