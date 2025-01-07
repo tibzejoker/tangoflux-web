@@ -21,7 +21,8 @@ A web interface for TangoFlux text-to-audio generation model. Generate high-qual
 
 1. Clone the repository:
 ```bash
-git clone [https://github.com/yourusername/tangoflux-web.git](https://github.com/tibzejoker/tangoflux-web)
+pip install git+https://github.com/declare-lab/TangoFlux
+git clone https://github.com/tibzejoker/tangoflux-web
 cd tangoflux-web
 ```
 
