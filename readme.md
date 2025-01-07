@@ -4,7 +4,7 @@
 A web interface for TangoFlux text-to-audio generation model. Generate high-quality audio from text descriptions in a user-friendly interface.
 
 <p align="center">
-  <img src="/api/placeholder/800/400" alt="TangoFlux Web Interface Screenshot">
+  <img src="/templates/generating.png" alt="TangoFlux Web Interface Screenshot">
 </p>
 
 ## Features
